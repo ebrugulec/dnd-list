@@ -3,6 +3,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import ShapeScreen from './ShapeScreen'
 import LinkedListScreen from './LinkedListScreen'
 import SYMBOLS from '../constants/symbols'
+import MessageScreen from './MessageScreen'
 
 const getItems = (count, offset = 0) =>
     Array.from({ length: count }, (v, k) => k).map(k => ({
@@ -36,7 +37,7 @@ const grid = 8;
 const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
     padding: grid * 2,
-    margin: `0 0 ${grid}px 0`,
+    margin: `0 auto 3px auto`,
     width: '70px',
     background: isDragging ? 'lightgreen' : 'grey',
     ...draggableStyle
@@ -44,16 +45,17 @@ const getItemStyle = (isDragging, draggableStyle) => ({
 
 const getListStyle = isDraggingOver => ({
     background: isDraggingOver ? 'lightblue' : 'lightgrey',
-    padding: grid,
-    width: 750,
-    height: 750
+    margin: ' 0 auto',
+    minHeight: 400
 });
 
 class MainScreen extends Component{
     state = {
         items: getItems(6),
         selected: getItems(0, 6),
-        messages: []
+        messages: [],
+        toastOpen: false,
+        toastMessage: ''
     };
     id2List = {
         droppable: 'items',
@@ -62,9 +64,6 @@ class MainScreen extends Component{
     getList = id => this.state[this.id2List[id]];
     onDragEnd = result => {
         const { source, destination, draggableId } = result;
-        console.log("source",source)
-        console.log("destination",destination)
-        console.log("draggableId",draggableId)
         const { selected } = this.state
 
         if (!destination) {
@@ -86,6 +85,7 @@ class MainScreen extends Component{
 
             this.setState(state);
         } else {
+            console.log("itemsss", this.state.items)
             const result = move(
                 this.getList(source.droppableId),
                 this.getList(destination.droppableId),
@@ -96,60 +96,66 @@ class MainScreen extends Component{
                 items: result.droppable,
                 selected: result.droppable2
             });
-            var message = ''
-            console.log("list", result.droppable2)
-            // if(selected.length === 0)
-            // {
-            //     message = `${draggableId} added to list`
-            // }else{
-            //     message = `${draggableId} added after ${result.droppable2[destination.index-1].id}`
-            // }
-            // const newMessage = [...this.state.messages, message]
-            // this.setState({
-            //     messages: newMessage
-            // })
+            if(destination.droppableId === 'droppable2'){
+                let message = ''
+                if((selected.length === 0))
+                {
+                    message = `${draggableId} added top of the list`
+                }else if(typeof result.droppable2[destination.index-1] === "undefined"){
+                    message = `${draggableId} added top of the list`
+                }
+                else{
+                    message = `${draggableId} added after ${result.droppable2[destination.index-1]['id']}`
+                }
+                const newMessage = [...this.state.messages, message]
+                this.setState({
+                    messages: newMessage,
+                    toastMessage: message,
+                    toastOpen: true
+                })
+                setTimeout(
+                    function() {
+                        this.setState({toastOpen: false});
+                    }
+                    .bind(this),
+                    3000
+                );
+            }
         }
     }
-    handleTrash = (item) => {
-        console.log(item)
+    handleTrash(sourceIndex, item){
+        var source = { index: sourceIndex, droppableId: 'droppable2'}
+        var destination = { droppableId: 'droppable', index: 0 }
+        const result = move(
+            this.state.selected,
+            this.state.items,
+            source,
+            destination
+        );
+        let message = `${item['id']} removed the list`
+        const newMessage = [...this.state.messages, message]
+        this.setState({
+            items: result.droppable,
+            selected: result.droppable2,
+            messages: newMessage,
+            toastMessage: message,
+            toastOpen: true
+        });
+        setTimeout(
+            function() {
+                this.setState({toastOpen: false});
+            }
+            .bind(this),
+            3000
+        );
     }
     render(){
-        console.log("items",this.state.items)
-        console.log("slected",this.state.selected)
-        const {messages} = this.state
+        const { messages, toastOpen, toastMessage } = this.state
         return(
             <div>
             <div className="wrapper">
             <DragDropContext onDragEnd={this.onDragEnd}>
-                <Droppable droppableId="droppable">
-                    {(provided, snapshot) => (
-                        <div
-                            ref={provided.innerRef}
-                            style={getListStyle(snapshot.isDraggingOver)}>
-                            {this.state.items.map((item, index) => (
-                                <Draggable
-                                    key={item.id}
-                                    draggableId={item.id}
-                                    index={index}>
-                                    {(provided, snapshot) => (
-                                        <div
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            {...provided.dragHandleProps}
-                                            style={getItemStyle(
-                                                snapshot.isDragging,
-                                                provided.draggableProps.style
-                                            )}>
-                                            {item.content}
-                                        </div>
-                                    )}
-                                </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </Droppable>
-                ||
+                <div className='linked-list_screen'>
                 <Droppable droppableId="droppable2">
                     {(provided, snapshot) => (
                         <div
@@ -161,17 +167,20 @@ class MainScreen extends Component{
                                     draggableId={item.id}
                                     index={index}>
                                     {(provided, snapshot) => (
-                                        <div
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            {...provided.dragHandleProps}
-                                            style={getItemStyle(
-                                                snapshot.isDragging,
-                                                provided.draggableProps.style
-                                            )}>
-                                            {item.content}
-                                            <br/>
-                                            <span onClick={() => this.handleTrash(item)} className="delete">🗑️</span>
+                                        <div>
+                                            <div
+                                                ref={provided.innerRef}
+                                                {...provided.draggableProps}
+                                                {...provided.dragHandleProps}
+                                                style={getItemStyle(
+                                                    snapshot.isDragging,
+                                                    provided.draggableProps.style
+                                                )}>
+                                                {item.content}
+                                                <br/>
+                                                <span  onClick={() => this.handleTrash(index, item)} className="delete">🗑️</span>
+                                            </div>
+                                            <div id="arrow">🠻</div>
                                         </div>
                                     )}
                                 </Draggable>
@@ -180,20 +189,44 @@ class MainScreen extends Component{
                         </div>
                     )}
                 </Droppable>
+                </div>
+                <div className="shape_screen">
+                    <Droppable droppableId="droppable">
+                        {(provided, snapshot) => (
+                            <div
+                                ref={provided.innerRef}
+                                style={getListStyle(snapshot.isDraggingOver)}>
+                                {this.state.items.map((item, index) => (
+                                    <Draggable
+                                        key={item.id}
+                                        draggableId={item.id}
+                                        index={index}>
+                                        {(provided, snapshot) => (
+                                            <div
+                                                ref={provided.innerRef}
+                                                {...provided.draggableProps}
+                                                {...provided.dragHandleProps}
+                                                style={getItemStyle(
+                                                    snapshot.isDragging,
+                                                    provided.draggableProps.style
+                                                )}>
+                                                {item.content}
+                                            </div>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </Droppable>
+                </div>
             </DragDropContext>
             </div>
-            <div>
-                {
-                    messages.length>0 &&
-                    <ul>
-                        {messages.map((message, i) => (
-                            <li key={i}>
-                                {message}
-                            </li>
-                        ))}
-                    </ul>
-                }
-            </div>
+            {
+                toastOpen &&
+                <div id='snackbar'>{toastMessage}</div>
+            }
+            <MessageScreen messages={messages}/>
             </div>
         )
     }

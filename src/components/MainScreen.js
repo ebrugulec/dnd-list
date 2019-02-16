@@ -1,75 +1,30 @@
 import React, { Component } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import ShapeScreen from './ShapeScreen'
-import LinkedListScreen from './LinkedListScreen'
 import SYMBOLS from '../constants/symbols'
 import MessageScreen from './MessageScreen'
 import ShapeCountModal from './ShapeCountModal'
 import SlidingInput from 'sliding-input'
+import { getItems, reorder, move } from '../utils'
 
-const getItems = (count, offset = 0) =>
-    Array.from({ length: count }, (v, k) => k).map(k => ({
-        id: `i${k + offset}`,
-        content: `${SYMBOLS[k]} i${k + offset}`
-    }));
-
-const reorder = (list, startIndex, endIndex) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-
-    return result;
-};
-
-const move = (source, destination, droppableSource, droppableDestination) => {
-    const sourceClone = Array.from(source);
-    const destClone = Array.from(destination);
-    const [removed] = sourceClone.splice(droppableSource.index, 1);
-
-    destClone.splice(droppableDestination.index, 0, removed);
-
-    const result = {};
-    result[droppableSource.droppableId] = sourceClone;
-    result[droppableDestination.droppableId] = destClone;
-
-    return result;
-};
-
-const grid = 8;
 const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
-    padding: grid * 2,
+    padding: 12,
     margin: `0 auto 3px auto`,
-    width: '70px',
+    width: '200px',
+    borderRadius: '6px',
     background: isDragging ? 'lightgreen' : 'grey',
     ...draggableStyle
 });
 
 const getListStyle = isDraggingOver => ({
-    background: isDraggingOver ? 'lightblue' : 'lightgrey',
-    margin: ' 0 auto',
+    background: isDraggingOver ? 'lightblue' : '#F5F3F3',
+    margin: '0 auto',
     minHeight: 400
 });
 
 const modalStyle = {
 	overlay: {
 		backgroundColor: "rgba(0, 0, 0,0.5)"
-	}
-};
-
-const mainStyle = {
-	app: {
-		// margin: "120px 0"
-	},
-	button: {
-		backgroundColor: "#408cec",
-		border: 0,
-		padding: "12px 20px",
-		color: "#fff",
-		margin: "0 auto",
-		// width: 150,
-		display: "block",
-		borderRadius: 3
 	}
 };
 
@@ -82,7 +37,7 @@ class MainScreen extends Component{
         toastMessage: '',
         isModalOpen: false,
         isInnerModalOpen: false,
-        shapeCount: 1
+        shapeCount: 10
     };
     id2List = {
         droppable: 'items',
@@ -199,9 +154,9 @@ class MainScreen extends Component{
         })
     }
     render(){
-        const { messages, toastOpen, toastMessage } = this.state
+        const { messages, toastOpen, toastMessage, shapeCount } = this.state
         return(
-            <div>
+            <>
             <div className="wrapper">
             <DragDropContext onDragEnd={this.onDragEnd}>
                 <div className='linked-list_screen'>
@@ -225,7 +180,7 @@ class MainScreen extends Component{
                                                     snapshot.isDragging,
                                                     provided.draggableProps.style
                                                 )}>
-                                                <span style={{textAlign: 'center', display: 'block'}}>{item.content}</span>
+                                                <span className="shape">{item.content}</span>
                                                 <br/>
                                                 <span  onClick={() => this.handleTrash(index, item)} className="delete">🗑️</span>
                                             </div>
@@ -243,15 +198,18 @@ class MainScreen extends Component{
                     <Droppable droppableId="droppable">
                         {(provided, snapshot) => (
                             <div
+                            className="align"
                                 ref={provided.innerRef}
                                 style={getListStyle(snapshot.isDraggingOver)}>
                                 {this.state.items.map((item, index) => (
                                     <Draggable
+                                        className="align"
                                         key={item.id}
                                         draggableId={item.id}
                                         index={index}>
                                         {(provided, snapshot) => (
                                             <div
+                                                className="align"
                                                 ref={provided.innerRef}
                                                 {...provided.draggableProps}
                                                 {...provided.dragHandleProps}
@@ -259,7 +217,7 @@ class MainScreen extends Component{
                                                     snapshot.isDragging,
                                                     provided.draggableProps.style
                                                 )}>
-                                                {item.content}
+                                                <span className="shape">{item.content}</span>
                                             </div>
                                         )}
                                     </Draggable>
@@ -276,29 +234,23 @@ class MainScreen extends Component{
                 <div id='snackbar'>{toastMessage}</div>
             }
             <MessageScreen messages={messages}/>
-            <div style={mainStyle.app}>
+            <div>
 				<ShapeCountModal
 					isModalOpen={this.state.isModalOpen}
 					closeModal={this.closeModal}
 					style={modalStyle}
 				>
-                <span>How many shapes do you want to create?</span>
-                <br/>
-                <SlidingInput min={1} max={25} defaultValue={15} value={1} onChange={this.handleInputValue}/>
-					<button
-						style={{
-							...mainStyle.button,
-							margin: 0,
-							width: "auto",
-							marginTop: 10
-						}}
-						onClick={this.closeModal}
-					>
-						Save
-					</button>
+                    <span>How many shapes do you want to create?</span>
+                    <br/>
+                    <SlidingInput min={1} max={25} defaultValue={15} value={shapeCount} onChange={this.handleInputValue}/>
+                    <br/>
+                    <br/>
+                    <button className="modal-button" onClick={this.closeModal}>
+                        Save
+                    </button>
 				</ShapeCountModal>
 			</div>
-            </div>
+            </>
         )
     }
 }

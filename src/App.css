@@ -27,14 +27,14 @@
 }
 
 .linked-list_screen{
-    width: 70%;
+    width: 80%;
     overflow: auto;
     height: 400px;
     margin: 0 auto;
 }
 
 .shape_screen{
-    width: 30%;
+    width: 20%;
     height: 400px;
     overflow: auto;
     border-left: 2px solid grey;
@@ -42,7 +42,10 @@
 }
 
 .shape{
-    font-size: 45px;
+    font-size: 25px;
+    text-align: center;
+    display: block;
+    color: #fff
 }
 .delete{
     cursor: default;
@@ -51,7 +54,8 @@
 }
 .messages{
     overflow: auto;
-    height: 200px;
+    height: 150px;
+    width: 70%
 }
 ul.list{
     list-style-type: none;
@@ -81,6 +85,20 @@ ul.list li::before{
     user-select: none;
 }
 .list-style::after{
+}
+
+.modal-button{
+    background-color: #408cec;
+    border: 0;
+    padding: 12px 20px;
+    color: #fff;
+    border-radius: 3;
+    margin-top: 5
+}
+
+.align{
+    text-align: center;
+    margin: auto;
 }
 /* Media Queries */
 @media only screen and (min-device-width: 320px) and (max-device-width: 480px) {

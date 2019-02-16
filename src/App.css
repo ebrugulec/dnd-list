@@ -29,13 +29,13 @@
 .linked-list_screen{
     width: 80%;
     overflow: auto;
-    height: 400px;
+    height: 500px;
     margin: 0 auto;
 }
 
 .shape_screen{
     width: 20%;
-    height: 400px;
+    height: 500px;
     overflow: auto;
     border-left: 2px solid grey;
     /* height: 700px; */
@@ -55,7 +55,10 @@
 .messages{
     overflow: auto;
     height: 150px;
-    width: 70%
+    width: 70%;
+    float: right;
+    text-align: right;
+    margin-right: 37px;
 }
 ul.list{
     list-style-type: none;

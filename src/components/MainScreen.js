@@ -19,7 +19,7 @@ const getItemStyle = (isDragging, draggableStyle) => ({
 const getListStyle = isDraggingOver => ({
     background: isDraggingOver ? 'lightblue' : '#F5F3F3',
     margin: '0 auto',
-    minHeight: 400
+    minHeight: '800px'
 });
 
 const modalStyle = {

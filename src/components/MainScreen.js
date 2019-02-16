@@ -4,11 +4,13 @@ import ShapeScreen from './ShapeScreen'
 import LinkedListScreen from './LinkedListScreen'
 import SYMBOLS from '../constants/symbols'
 import MessageScreen from './MessageScreen'
+import ShapeCountModal from './ShapeCountModal'
+import SlidingInput from 'sliding-input'
 
 const getItems = (count, offset = 0) =>
     Array.from({ length: count }, (v, k) => k).map(k => ({
-        id: `item-${k + offset}`,
-        content: `${SYMBOLS[k]} item-${k + offset}`
+        id: `i${k + offset}`,
+        content: `${SYMBOLS[k]} i${k + offset}`
     }));
 
 const reorder = (list, startIndex, endIndex) => {
@@ -49,13 +51,38 @@ const getListStyle = isDraggingOver => ({
     minHeight: 400
 });
 
+const modalStyle = {
+	overlay: {
+		backgroundColor: "rgba(0, 0, 0,0.5)"
+	}
+};
+
+const mainStyle = {
+	app: {
+		// margin: "120px 0"
+	},
+	button: {
+		backgroundColor: "#408cec",
+		border: 0,
+		padding: "12px 20px",
+		color: "#fff",
+		margin: "0 auto",
+		// width: 150,
+		display: "block",
+		borderRadius: 3
+	}
+};
+
 class MainScreen extends Component{
     state = {
-        items: getItems(6),
-        selected: getItems(0, 6),
+        items: [],
+        selected: [],
         messages: [],
         toastOpen: false,
-        toastMessage: ''
+        toastMessage: '',
+        isModalOpen: false,
+        isInnerModalOpen: false,
+        shapeCount: 1
     };
     id2List = {
         droppable: 'items',
@@ -149,6 +176,28 @@ class MainScreen extends Component{
             3000
         );
     }
+    closeModal = () => {
+        const { shapeCount } = this.state
+		this.setState({
+            isModalOpen: false,
+            items: getItems(shapeCount),
+            selected: getItems(0, shapeCount),
+		});
+    }
+    componentDidMount(){
+        this.openModal()
+    }
+
+	openModal = () => {
+		this.setState({
+			isModalOpen: true
+		});
+    }
+    handleInputValue = (value) => {
+        this.setState({
+            shapeCount: value
+        })
+    }
     render(){
         const { messages, toastOpen, toastMessage } = this.state
         return(
@@ -176,7 +225,7 @@ class MainScreen extends Component{
                                                     snapshot.isDragging,
                                                     provided.draggableProps.style
                                                 )}>
-                                                {item.content}
+                                                <span style={{textAlign: 'center', display: 'block'}}>{item.content}</span>
                                                 <br/>
                                                 <span  onClick={() => this.handleTrash(index, item)} className="delete">🗑️</span>
                                             </div>
@@ -227,6 +276,28 @@ class MainScreen extends Component{
                 <div id='snackbar'>{toastMessage}</div>
             }
             <MessageScreen messages={messages}/>
+            <div style={mainStyle.app}>
+				<ShapeCountModal
+					isModalOpen={this.state.isModalOpen}
+					closeModal={this.closeModal}
+					style={modalStyle}
+				>
+                <span>How many shapes do you want to create?</span>
+                <br/>
+                <SlidingInput min={1} max={25} defaultValue={15} value={1} onChange={this.handleInputValue}/>
+					<button
+						style={{
+							...mainStyle.button,
+							margin: 0,
+							width: "auto",
+							marginTop: 10
+						}}
+						onClick={this.closeModal}
+					>
+						Save
+					</button>
+				</ShapeCountModal>
+			</div>
             </div>
         )
     }

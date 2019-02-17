@@ -1,4 +1,38 @@
 import React, { Component } from 'react'
+import SlidingInput from 'sliding-input'
+
+const modalStyle = {
+	overlay: {
+		backgroundColor: "rgba(0, 0, 0,0.5)"
+	}
+};
+
+//The component we define how many shapes will be in the project.
+const ShapeForm = (props) => {
+    return(
+        <ShapeCountModal
+            isModalOpen={props.isModalOpen}
+            closeModal={props.closeModal}
+            style={modalStyle}
+        >
+            <span>How many shapes do you want to create?</span>
+            <br/>
+            <SlidingInput
+                min={1}
+                max={25}
+                defaultValue={15}
+                value={props.shapeCount}
+                onChange={props.handleInputValue}
+            />
+            <br/>
+            <button className="modal-button" onClick={props.closeModal}>
+                Save
+            </button>
+        </ShapeCountModal>
+    )
+}
+
+//modal to open when the project is loaded.
 class ShapeCountModal extends Component {
 	constructor(props) {
 		super(props);
@@ -13,7 +47,6 @@ class ShapeCountModal extends Component {
 			zIndex: 1
 		};
 
-		// default style
 		this.style = {
 			modal: {
 				position: "relative",
@@ -42,7 +75,6 @@ class ShapeCountModal extends Component {
 		};
 	}
 
-	// render modal
 	render() {
 		return (
 			<div
@@ -51,12 +83,11 @@ class ShapeCountModal extends Component {
 					display: this.props.isModalOpen ? "block" : "none"
 				}}
 			>
-				<div style={this.style.overlay} onClick={this.props.closeModal} />
-				<div onClick={this.props.closeModal} />
+				<div style={this.style.overlay}/>
 				<div style={this.style.modal}>{this.props.children}</div>
 			</div>
 		);
 	}
 }
 
-export default ShapeCountModal;
+export default ShapeForm;

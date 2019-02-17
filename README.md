@@ -1,4 +1,5 @@
 # dnd list
+![dnd-list](https://raw.githubusercontent.com/ebrugulec/dnd-list/master/dnd-list-gif.gif)
 
 ## Install and Usage
 ```bash
